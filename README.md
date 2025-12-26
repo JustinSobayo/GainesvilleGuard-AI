@@ -12,7 +12,7 @@ The system follows a modern Event-Driven Architecture (EDA):
 
 *   **Ingestion**: Python Producers stream crime data into **Apache Kafka**.
 *   **Processing**: **Apache Spark Structured Streaming** processes raw events in real-time.
-*   **Knowledge Graph**: **Neo4j** models complex relationships (e.g., repeat offenders, gangs, crime clusters).
+*   **Knowledge Graph**: **Neo4j** models spatial-temporal relationships (crime clusters, environmental risk factors, location-based patterns).
 *   **Storage**: 
     *   **PostgreSQL + PostGIS** for geospatial fact storage and fast map querying.
     *   **AWS S3** for data lake archival.
@@ -36,10 +36,21 @@ We use **PostGIS** to handle the heavy lifting of spatial queries.
 *   **Spatial Aggregation**: Essential for the predictive model, which divides Gainesville into thousands of fixed grid cells. PostGIS allows us to "Count crimes inside Grid X" instantly, which is critical for training the AI model and generating heatmaps.
 
 ## 🔮 Predictive Crime Prevention
-This system utilizes **Predictive Policing** methodologies:
-1.  **Risk Terrain Modeling (RTM)**: Identifies environmental factors that contribute to crime risk (e.g., proximity to bars, dark alleyways).
-2.  **Graph-Based Features**: Uses Neo4j to calculate "Centrality" and "Community Detection" to see if a specific area is becoming a hub for criminal activity based on networked relationships.
-3.  **Temporal Analysis**: AI models analyze time-series data to predict risk scores for specific future time windows (e.g., "High Risk on Friday at 11 PM").
+This system utilizes **Spatial-Temporal Pattern Analysis** methodologies:
+
+### 1. Risk Terrain Modeling (RTM)
+Identifies environmental factors that contribute to crime risk by connecting crime events to nearby points of interest (bars, ATMs, bus stops) from OpenStreetMap data.
+
+### 2. Graph-Based Pattern Detection
+Uses Neo4j to model relationships:
+*   **Crime Clusters**: `(Crime)-[:NEAR]->(Crime)` - Crimes within 500m and 7 days
+*   **Environmental Context**: `(Crime)-[:OCCURRED_NEAR]->(Place)` - Proximity to high-risk locations
+*   **Temporal Patterns**: `(Crime)-[:DURING]->(TimeWindow)` - Time-of-day and day-of-week clustering
+*   **Grid Risk Scores**: `(Grid)-[:HIGH_RISK_FOR]->(CrimeType)` - Predictive risk by location and crime type
+
+### 3. LLM-Powered Explanations
+When users click a high-risk zone, an LLM (Gemini/Groq) queries the Knowledge Graph to generate natural language explanations:
+> "This area shows elevated risk due to 12 thefts within 200 meters in the last 30 days, with 8 occurring near University Ave ATMs between 10 PM - 2 AM, matching historical Friday night patterns."
 
 ## ⚖️ License
 This project is proprietary software. All rights reserved.
