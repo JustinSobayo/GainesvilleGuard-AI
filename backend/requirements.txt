@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+psycopg2-binary  # Postgres
+kafka-python     # Kafka
+boto3           # AWS S3
+neo4j           # Neo4j Driver
+pyspark         # Spark
+langchain       # AI Orchestration
+langchain-community
+langchain-google-genai # For Gemini
+python-dotenv   # Env vars
+requests        # API polling
