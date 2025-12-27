@@ -47,7 +47,39 @@ class TestFetchHistoricalCrimes:
         assert result[0]["incident_date"] == "2024-01-15"
         assert result[0]["latitude"] == "28.6929"
         assert result[0]["longitude"] == "-82.3248"
-        
+    def test_fetch_historical_crimes_timeout(self, mocker):
+        """Test that function returns None on timeouts."""
+        # arrange
+        mocker.patch('backend.ingest_historical.requests.get', side_effect=requests.exceptions.Timeout("API timeout"))
+        # act
+        result = fetch_historical_crimes()
+        # assert
+        assert result is None
 
+    def test_fetch_historical_crimes_http_error(self, mocker):
+        """Test that function returns None on HTTP errors"""
+        # arrange
+        mocker.patch('backend.ingest_historical.requests.get', side_effect=requests.exceptions.HTTPError("HTTP error"))
+        # act
+        result = fetch_historical_crimes()
+        # assert
+        assert result is None
 
-        
+    def test_fetch_historical_crimes_connection_error(self, mocker):
+        """Test that function returns None on connection errors"""
+        # arrange
+        mocker.patch('backend.ingest_historical.requests.get', side_effect=requests.exceptions.ConnectionError("Connection error"))
+        # act
+        result = fetch_historical_crimes()
+        # assert
+        assert result is None
+
+    def test_fetch_historical_crimes_generic_error(self, mocker):
+        """Test that function returns None on any other request exception"""
+        # arrange
+        mocker.patch('backend.ingest_historical.requests.get', side_effect=requests.exceptions.RequestException("Generic error"))
+        # act
+        result = fetch_historical_crimes()
+        # assert
+        assert result is None
+    
