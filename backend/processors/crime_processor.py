@@ -12,10 +12,10 @@ import os
 
 from dotenv import load_dotenv
 
-# TODO: Uncomment after confirming PySpark is installed
-# from pyspark.sql import SparkSession
-# from pyspark.sql.functions import from_json, col
-# from pyspark.sql.types import StructType, StructField, StringType, DoubleType, TimestampType
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import from_json, col
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, TimestampType
 
 load_dotenv()
 
@@ -55,8 +55,14 @@ def get_spark_session():
                     "org.postgresql:postgresql:42.6.0") \\
             .getOrCreate()
     """
-    pass
-
+    try:
+        return SparkSession.builder \
+            .appName("CrimeDataProcessor") \
+            .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.postgresql:postgresql:42.6.0") \
+            .getOrCreate()
+    except Exception as e:
+        print(f"Error creating SparkSession: {e}")
+        raise e
 
 def get_crime_schema():
     """
@@ -74,7 +80,22 @@ def get_crime_schema():
     
     Return a StructType matching this schema.
     """
-    pass
+    return StructType([
+        StructField("id", StringType(), True),
+        StructField("Incident_Type", StringType(), True),
+        StructField("report_date", StringType(), True),
+        StructField("offense_date", StringType(), True),
+        StructField("report_hour_of_day", StringType(), True),
+        StructField("report_day_of_week", StringType(), True),
+        StructField("offense_hour_of_day", StringType(), True),
+        StructField("offense_day_of_week", StringType(), True),
+        StructField("address", StringType(), True),
+        StructField("latitude", DoubleType(), True),
+        StructField("longitude", DoubleType(), True),
+        StructField("city", StringType(), True),
+        StructField("state", StringType(), True),
+        StructField("location", StringType(), True),
+    ])
 
 
 def read_from_kafka(spark):
