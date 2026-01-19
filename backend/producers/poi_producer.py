@@ -13,8 +13,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-# TODO: Uncomment after installing kafka-python or confluent-kafka
-# from kafka import KafkaProducer
+from kafka import KafkaProducer
 
 from backend.s3_utils import download_data
 
