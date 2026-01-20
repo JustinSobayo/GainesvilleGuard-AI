@@ -47,7 +47,7 @@ services:
       - "7474:7474"
       - "7687:7687"
     environment:
-      NEO4J_AUTH: neo4j/password
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
       NEO4J_dbms_memory_pagecache_size: 512M
   spark-master:
     image: apache/spark:3.5.0
@@ -58,6 +58,9 @@ services:
     ports:
       - "8080:8080"
       - "7077:7077"
+    volumes:
+      - ./backend:/app/backend
+      - ./.env:/app/.env
 
   spark-worker:
     image: apache/spark:3.5.0
@@ -68,3 +71,43 @@ services:
     environment:
       - SPARK_WORKER_CORES=1
       - SPARK_WORKER_MEMORY=1G
+
+  crime-processor:
+    image: apache/spark:3.5.0
+    container_name: crime-processor
+    depends_on:
+      - kafka
+      - postgres
+      - neo4j
+      - spark-master
+    volumes:
+      - ./backend:/app/backend
+      - .env:/app/.env
+    environment:
+      - PYTHONPATH=/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip
+      - KAFKA_BROKER=kafka:9092
+      - POSTGRES_HOST=postgres
+      - NEO4J_URI=bolt://neo4j:7687
+    # Use root to install missing deps, then run the processor
+    user: root
+    command: >
+      sh -c "pip install neo4j python-dotenv psycopg2-binary && 
+             python3 -u /app/backend/processors/crime_processor.py"
+
+  crime-producer:
+    image: python:3.11-slim
+    container_name: crime-producer
+    depends_on:
+      - kafka
+    volumes:
+      - ./backend:/app/backend
+      - .env:/app/.env
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - PYTHONPATH=/app
+    # Run once to seed Kafka, then exit
+    command: >
+      sh -c "pip install kafka-python boto3 python-dotenv && 
+             python3 -u /app/backend/producers/crime_producer.py"
+
+

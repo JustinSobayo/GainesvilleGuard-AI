@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-# from backend.neo4j_ops import get_crime_explanation
+from fastapi.responses import HTMLResponse
+from backend.neo4j_ops import get_crime_explanation
 
 app = FastAPI(title="GainesvilleGuard API")
 
